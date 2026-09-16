@@ -596,6 +596,8 @@ const I18N = {
     no_exercises_day:'No exercises logged this day.',
     nothing_logged_day:'Nothing logged for this day yet.',
     theme_dark:'🌙 Dark', theme_light:'☀️ Light',
+    me_done_banner:"Next session's top set will be whatever you went heaviest on today — add extra sets any time you've got more in the tank.",
+    clean_bump_banner:'Complete every set clean next time and that side goes up another 5 lb.',
   },
   zh: {
     edit:'編輯', add:'新增', export:'⬇ 匯出', import:'⬆ 匯入',
@@ -625,6 +627,8 @@ const I18N = {
     no_exercises_day:'這一天沒有訓練紀錄。',
     nothing_logged_day:'這一天還沒有記錄任何東西。',
     theme_dark:'🌙 深色', theme_light:'☀️ 淺色',
+    me_done_banner:'下次的最高組重量將以你今天做到的最重一組為準——只要還有餘力，隨時可以多加一組。',
+    clean_bump_banner:'下次乾淨完成所有組數，這一側就會增加5磅。',
   }
 };
 function t(key, vars){
@@ -2142,12 +2146,28 @@ function applyPlanProgression(ex){
     if(wkNum && ex.plan[wkNum-1]){
       const wkPlan = ex.plan[wkNum-1];
       const isME = /MAX EFFORT/i.test(wkPlan.scheme||'');
-      const allPassed = isME
-        ? (lastSessionEntries.length>0 && lastSessionEntries.every(s=>!s.failed))
-        : (lastSessionEntries.length >= wkPlan.sets && lastSessionEntries.every(s=>!s.failed));
-      if(allPassed){
-        ex.progressOffset[side] = (ex.progressOffset[side]||0) + 5;
-        showToast(ex.name+' ('+side+') — full session completed, +5 lb next time 🎉');
+      if(isME){
+        const requiredCount = wkPlan.sets;
+        const baseEntries = lastSessionEntries.slice(0, requiredCount);
+        const baseComplete = lastSessionEntries.length >= requiredCount && baseEntries.every(s=>!s.failed);
+        const currentSuggested = wkPlan.weight + (ex.progressOffset[side]||0);
+        let newSuggested = currentSuggested;
+        if(baseComplete) newSuggested = currentSuggested + 5;
+        const weights = lastSessionEntries.map(s=>s.weight);
+        if(weights.length>0){
+          const heaviestAttempted = Math.max(...weights);
+          if(heaviestAttempted > newSuggested) newSuggested = heaviestAttempted;
+        }
+        if(newSuggested > currentSuggested){
+          ex.progressOffset[side] = newSuggested - wkPlan.weight;
+          showToast(ex.name+' ('+side+') — top set now '+newSuggested+' lb next time 🎉');
+        }
+      } else {
+        const allPassed = lastSessionEntries.length >= wkPlan.sets && lastSessionEntries.every(s=>!s.failed);
+        if(allPassed){
+          ex.progressOffset[side] = (ex.progressOffset[side]||0) + 5;
+          showToast(ex.name+' ('+side+') — full session completed, +5 lb next time 🎉');
+        }
       }
     }
     ex.progressCheckedUpTo[side] = lastDate;
@@ -2215,13 +2235,14 @@ function renderWeekLog(){
 
   function sideBlock(side, entries, suggested){
     let html = '';
+    const bottomWeight = (isMaxEffort && suggested!==null) ? suggested - 5*(wk.sets-1) : null;
     for(let i=0;i<setCount;i++){
       const entry = entries[i];
       const isDone = !!entry;
       const isFailed = isDone && entry.failed;
       const isPassed = isDone && !entry.failed;
       const rowWeight = suggested!==null
-        ? (isMaxEffort ? suggested - 5*(setCount-1-i) : suggested)
+        ? (isMaxEffort ? bottomWeight + 5*i : suggested)
         : null;
       html += `
         <div class="side-set-row">
@@ -2240,14 +2261,17 @@ function renderWeekLog(){
 
   const allDone = todaysLH.length>=setCount && todaysRH.length>=setCount;
 
+  const meTopLH = (isMaxEffort && suggestedLH!==null) ? (suggestedLH - 5*(wk.sets-1)) + 5*(setCount-1) : null;
+  const meTopRH = (isMaxEffort && suggestedRH!==null) ? (suggestedRH - 5*(wk.sets-1)) + 5*(setCount-1) : null;
   const meStepperHtml = isMaxEffort ? `
     <div class="guide-top" style="margin-top:-4px; margin-bottom:14px;">
-      <span class="label" style="margin-bottom:0;">Sets today (top set = LH ${suggestedLH??'?'} / RH ${suggestedRH??'?'} lb)</span>
+      <span class="label" style="margin-bottom:0;">Sets today (top set = LH ${meTopLH??'?'} / RH ${meTopRH??'?'} lb)</span>
       <div style="display:flex; align-items:center; gap:10px;">
         <button class="step-btn" style="width:34px; height:34px; font-size:18px;" id="me-minus">−</button>
         <span style="font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:18px; min-width:20px; text-align:center;">${meSetCount}</span>
         <button class="step-btn" style="width:34px; height:34px; font-size:18px;" id="me-plus">+</button>
       </div>
+      <div style="color:var(--text-dim); font-size:12px; margin-top:2px;">Crushing it? Tap + to add a heavier top set.</div>
     </div>
   ` : '';
 
@@ -2268,7 +2292,7 @@ function renderWeekLog(){
         </div>
       </div>
     </div>
-    ${allDone ? `<div class="complete-banner">✅ All sets logged for both hands. Complete every set clean next time and that side goes up another 5 lb.</div>` : ''}
+    ${allDone ? `<div class="complete-banner">✅ All sets logged for both hands. ${isMaxEffort ? t('me_done_banner') : t('clean_bump_banner')}</div>` : ''}
     <button class="rest-btn" id="week-log-rest">${t('start_rest_timer')}</button>
   `;
   setsEl.querySelector('#week-log-rest').onclick = ()=> openTimer();
