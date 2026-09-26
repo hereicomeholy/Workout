@@ -733,11 +733,47 @@ function showToast(msg){
 /* ---------- Unit toggle ---------- */
 document.getElementById('unit-lb').onclick=()=>setUnit('lb');
 document.getElementById('unit-kg').onclick=()=>setUnit('kg');
-function setUnit(u){
-  data.unit=u; save();
+const LB_PER_KG = 0.453592;
+function isDumbbellExercise(name){ return /dumbbell/i.test(name); }
+function convertWeightValue(w, fromUnit, toUnit, name){
+  if(w==null || isNaN(w) || fromUnit===toUnit) return w;
+  const raw = fromUnit==='lb' ? (w*LB_PER_KG) : (w/LB_PER_KG);
+  if(toUnit==='kg'){
+    const step = isDumbbellExercise(name) ? 2 : 2.5;
+    return Math.round(raw/step)*step;
+  }
+  return Math.round(raw/5)*5;
+}
+function convertAllWeightsForUnitChange(fromUnit, toUnit){
+  if(fromUnit===toUnit) return;
+  for(const cat in data.categories){
+    if(cat==='Armwrestling') continue;
+    data.categories[cat].forEach(ex=>{
+      if(ex.oneRM!=null) ex.oneRM = convertWeightValue(ex.oneRM, fromUnit, toUnit, ex.name);
+      if(ex.tm!=null) ex.tm = convertWeightValue(ex.tm, fromUnit, toUnit, ex.name);
+      const logs = data.logs[ex.name];
+      if(logs) logs.forEach(entry=>{
+        if(entry.weight!=null) entry.weight = convertWeightValue(entry.weight, fromUnit, toUnit, ex.name);
+      });
+    });
+  }
+  if(data.goals) data.goals.forEach(g=>{
+    if(isArmwrestlingExercise(g.name)) return;
+    if(g.weight!=null) g.weight = convertWeightValue(g.weight, fromUnit, toUnit, g.name);
+  });
+}
+function syncUnitUI(u){
   document.getElementById('unit-lb').classList.toggle('active',u==='lb');
   document.getElementById('unit-kg').classList.toggle('active',u==='kg');
+}
+function setUnit(u){
+  if(u===data.unit){ syncUnitUI(u); return; }
+  convertAllWeightsForUnitChange(data.unit, u);
+  data.unit=u; save();
+  syncUnitUI(u);
   if(currentExercise) renderTrack();
+  renderGoals();
+  showToast('Weights converted to '+u.toUpperCase());
 }
 
 function applyTheme(){
