@@ -1366,6 +1366,7 @@ function renderTrack531(ex, container, onChange){
       if(!data.logs[ex.name]) data.logs[ex.name]=[];
       data.logs[ex.name].push({date:todayStr(), week:weekIdx+1, weight, reps, failed, bbb:false, idx});
       save();
+      autoStartRest();
       onChange();
     };
   });
@@ -1394,6 +1395,7 @@ function renderTrack531(ex, container, onChange){
       if(!data.logs[ex.name]) data.logs[ex.name]=[];
       data.logs[ex.name].push({date:todayStr(), week:weekIdx+1, weight, reps, failed, bbb:true});
       save();
+      autoStartRest();
       onChange();
     };
   });
@@ -1653,6 +1655,7 @@ function renderGraph(name, svgEl, captionEl){
 
 /* ---------- Rest timer ---------- */
 const TIMER_KEY = 'ironlog_timer_v1';
+const LAST_REST_SECS_KEY = 'ironlog_last_rest_secs';
 const overlay=document.getElementById('overlay');
 const presetStage=document.getElementById('preset-stage');
 const timerStage=document.getElementById('timer-stage');
@@ -1675,7 +1678,16 @@ function openTimer(){
     document.getElementById('overlay-stop').style.display='none';
   }
 }
-document.querySelectorAll('.preset-btn').forEach(b=> b.onclick=()=>startCountdown(parseInt(b.dataset.secs)) );
+document.querySelectorAll('.preset-btn').forEach(b=> b.onclick=()=>{
+  const secs = parseInt(b.dataset.secs);
+  localStorage.setItem(LAST_REST_SECS_KEY, secs);
+  startCountdown(secs);
+});
+function autoStartRest(){
+  const saved = parseInt(localStorage.getItem(LAST_REST_SECS_KEY));
+  if(!isNaN(saved) && saved>0) startCountdown(saved);
+  else openTimer();
+}
 document.getElementById('overlay-cancel').onclick=()=>{ overlay.classList.remove('active'); };
 document.getElementById('overlay-stop').onclick=()=>{
   clearInterval(timerInterval); timerInterval=null; timerEndAt=null;
@@ -2424,6 +2436,7 @@ function renderWeekLog(){
       if(!data.logs[ex.name]) data.logs[ex.name]=[];
       data.logs[ex.name].push({date:todayStr(), plannedWeek:currentProgramWeek+1, weight, reps, failed, side});
       save();
+      if(side==='LH') autoStartRest();
       renderWeekLog();
     };
   });
