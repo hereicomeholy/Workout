@@ -738,10 +738,7 @@ function isDumbbellExercise(name){ return /dumbbell/i.test(name); }
 function convertWeightValue(w, fromUnit, toUnit, name){
   if(w==null || isNaN(w) || fromUnit===toUnit) return w;
   const raw = fromUnit==='lb' ? (w*LB_PER_KG) : (w/LB_PER_KG);
-  if(toUnit==='kg'){
-    const step = isDumbbellExercise(name) ? 2 : 2.5;
-    return Math.round(raw/step)*step;
-  }
+  if(toUnit==='kg') return Math.round(raw/2.5)*2.5;
   return Math.round(raw/5)*5;
 }
 function convertAllWeightsForUnitChange(fromUnit, toUnit){
@@ -1223,10 +1220,7 @@ function isArmwrestlingExercise(name){ return findCategoryOf(name)==='Armwrestli
 function unitFor(ex){ return isArmwrestlingExercise(ex.name) ? 'lb' : data.unit; }
 function incrementFor(ex){ return isArmwrestlingExercise(ex.name) ? 5 : progressionIncrement(ex.isLower); }
 function roundWeightFor(w, unit, name){
-  if(unit==='kg'){
-    const step = (name && isDumbbellExercise(name)) ? 2 : 2.5;
-    return Math.round(w/step)*step;
-  }
+  if(unit==='kg') return Math.round(w/2.5)*2.5;
   return Math.round(w/5)*5;
 }
 
