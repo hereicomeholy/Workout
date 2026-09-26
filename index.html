@@ -1694,14 +1694,38 @@ document.getElementById('overlay-stop').onclick=()=>{
   localStorage.removeItem(TIMER_KEY); releaseWakeLock();
   timerPill.style.display='none';
   overlay.classList.remove('active');
+  closeLiveNotification();
 };
 
+function showLiveNotification(remaining){
+  if(!('serviceWorker' in navigator && 'Notification' in window && Notification.permission==='granted')) return;
+  const m=Math.floor(remaining/60), ss=remaining%60;
+  navigator.serviceWorker.ready.then(reg=>{
+    reg.showNotification('Rest timer — '+m+':'+String(ss).padStart(2,'0'), {
+      body: 'Tap to jump back into Iron Cocka.',
+      icon: 'icon-192.png',
+      badge: 'icon-192.png',
+      tag: 'iron-cocka-timer',
+      silent: true,
+      renotify: false
+    });
+  }).catch(()=>{});
+}
+function closeLiveNotification(){
+  if(!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.ready.then(reg=>{
+    reg.getNotifications({tag:'iron-cocka-timer'}).then(list=>list.forEach(n=>n.close()));
+  }).catch(()=>{});
+}
+
+let lastNotifiedSecond = null;
 function startCountdown(secs){
   presetStage.style.display='none'; timerStage.style.display='flex';
   document.getElementById('overlay-stop').style.display='inline-block';
   timerEndAt = Date.now() + secs*1000;
   localStorage.setItem(TIMER_KEY, JSON.stringify({endAt:timerEndAt}));
   requestWakeLock();
+  lastNotifiedSecond = null;
   if('Notification' in window && Notification.permission==='default'){
     Notification.requestPermission();
   }
@@ -1716,6 +1740,10 @@ function tick(){
   if(remaining<=0){ finishTimer(); return; }
   updateDisplay(remaining);
   updatePill(remaining);
+  if(remaining !== lastNotifiedSecond){
+    lastNotifiedSecond = remaining;
+    showLiveNotification(remaining);
+  }
 }
 
 function finishTimer(){
@@ -1737,6 +1765,7 @@ function finishTimer(){
         tag: 'iron-cocka-timer',
         renotify: true
       });
+      setTimeout(closeLiveNotification, 5000);
     }).catch(()=>{});
   }
   overlay.classList.add('active');
@@ -2676,7 +2705,7 @@ document.getElementById('screen-protein').addEventListener('focusin', (e)=>{
 });
 
 /* ---------- Plate calculator (popover) ---------- */
-const PLATE_SETS = { kg:[25,20,15,10,5,2.5,1.25], lb:[45,35,25,10,5,2.5] };
+const PLATE_SETS = { kg:[20,15,10,5,2.5,1.25], lb:[45,35,25,10,5,2.5] };
 const DEFAULT_BAR = { kg:20, lb:45 };
 
 function openPlatePopover(weight, unit){
