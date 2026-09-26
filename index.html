@@ -1222,7 +1222,13 @@ function renderTrack(){
 function isArmwrestlingExercise(name){ return findCategoryOf(name)==='Armwrestling'; }
 function unitFor(ex){ return isArmwrestlingExercise(ex.name) ? 'lb' : data.unit; }
 function incrementFor(ex){ return isArmwrestlingExercise(ex.name) ? 5 : progressionIncrement(ex.isLower); }
-function roundWeightFor(w, unit){ const step = unit==='kg' ? 2.5 : 5; return Math.round(w/step)*step; }
+function roundWeightFor(w, unit, name){
+  if(unit==='kg'){
+    const step = (name && isDumbbellExercise(name)) ? 2 : 2.5;
+    return Math.round(w/step)*step;
+  }
+  return Math.round(w/5)*5;
+}
 
 function renderTrack531(ex, container, onChange){
   container = container || trackContent;
@@ -1242,7 +1248,7 @@ function renderTrack531(ex, container, onChange){
       const oneRM = parseFloat(container.querySelector('#setup-1rm').value);
       if(!oneRM || oneRM<=0){ showToast('Enter a valid 1RM first'); return; }
       ex.oneRM = oneRM;
-      ex.tm = roundWeightFor(oneRM*0.9, u);
+      ex.tm = roundWeightFor(oneRM*0.9, u, ex.name);
       if(cat !== 'Main Lifts' && cat !== 'Armwrestling'){ ex.isLower = (cat === 'Legs'); }
       ex.progressedCycles = Math.floor(distinctDaysLogged(ex.name)/4);
       save();
@@ -1261,7 +1267,7 @@ function renderTrack531(ex, container, onChange){
 
   let setsHtml='';
   wk.pct.forEach((p,i)=>{
-    const weight = roundWeightFor(ex.tm*p, u);
+    const weight = roundWeightFor(ex.tm*p, u, ex.name);
     const entry = todaysSets[i];
     const isDone = !!entry;
     const isFailed = isDone && entry.failed;
@@ -1282,7 +1288,7 @@ function renderTrack531(ex, container, onChange){
       </div>`;
   });
 
-  const bbbWeight = roundWeightFor(ex.tm*0.5, u);
+  const bbbWeight = roundWeightFor(ex.tm*0.5, u, ex.name);
   let bbbSetsHtml='';
   for(let i=0;i<5;i++){
     const entry = todaysBbb[i];
@@ -1329,7 +1335,7 @@ function renderTrack531(ex, container, onChange){
   container.querySelector('[data-edit-1rm]').onclick=()=>{
     const val = prompt('New 1-rep max ('+u+'):', ex.oneRM||'');
     const num = parseFloat(val);
-    if(num>0){ ex.oneRM=num; ex.tm=roundWeightFor(num*0.9, u); save(); onChange(); }
+    if(num>0){ ex.oneRM=num; ex.tm=roundWeightFor(num*0.9, u, ex.name); save(); onChange(); }
   };
   container.querySelector('[data-track-rest]').onclick=()=>openTimer();
   container.querySelector('[data-bbb-toggle]').onclick=()=>{
@@ -1535,10 +1541,41 @@ function renderHistory(name, el){
     <div class="day-group">
       <div class="date-label">${d}</div>
       <div class="card">
-        ${byDate[d].map((s,i)=>`<div class="set-line"><div class="set-idx ${s.failed?'idx-failed':''}">${i+1}</div><div class="vals ${s.failed?'failed':''}">${s.side?`<b>${s.side}</b> · `:''}${s.weight} ${unit} × ${s.reps} reps${s.bbb?' · BBB':''}${s.failed?' · missed':''}</div></div>`).join('')}
+        ${byDate[d].map((s,i)=>{
+          const realIdx = logs.indexOf(s);
+          return `<div class="set-line"><div class="set-idx ${s.failed?'idx-failed':''}">${i+1}</div><div class="vals ${s.failed?'failed':''}" data-hist-edit="${realIdx}" style="cursor:pointer;">${s.side?`<b>${s.side}</b> · `:''}${s.weight} ${unit} × ${s.reps} reps${s.bbb?' · BBB':''}${s.failed?' · missed':''}</div><button class="del-btn" data-hist-del="${realIdx}">✕</button></div>`;
+        }).join('')}
       </div>
     </div>
   `).join('');
+  el.querySelectorAll('[data-hist-edit]').forEach(elm=>{
+    elm.onclick = ()=>{
+      const idx = parseInt(elm.dataset.histEdit);
+      const entry = data.logs[name][idx];
+      if(!entry) return;
+      const wVal = prompt('Weight ('+unit+'):', entry.weight);
+      if(wVal===null) return;
+      const w = parseFloat(wVal);
+      if(isNaN(w) || w<0){ showToast('Enter a valid weight'); return; }
+      const rVal = prompt('Reps:', entry.reps);
+      if(rVal===null) return;
+      const r = parseInt(rVal);
+      if(isNaN(r) || r<0){ showToast('Enter a valid rep count'); return; }
+      entry.weight = w; entry.reps = r;
+      save();
+      renderHistory(name, el);
+      showToast('Entry updated');
+    };
+  });
+  el.querySelectorAll('[data-hist-del]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const idx = parseInt(btn.dataset.histDel);
+      data.logs[name].splice(idx,1);
+      save();
+      renderHistory(name, el);
+      showToast('Entry deleted');
+    };
+  });
 }
 
 /* ---------- Graph ---------- */
