@@ -93,6 +93,10 @@
   .category.open .chevron{transform:rotate(90deg);}
   .cat-del{background:none; border:none; color:var(--red); font-size:13px; display:none; font-weight:600;}
   .editing .cat-del{display:inline-block;}
+  .cat-rename{background:none; border:none; color:var(--blue); font-size:13px; display:none; font-weight:600; margin-right:10px;}
+  .editing .cat-rename{display:inline-block;}
+  .ex-rename{background:none; border:none; color:var(--blue); font-size:14px; display:none; margin-right:8px;}
+  .editing .ex-rename{display:inline-block;}
   .category-body{display:none; border-top:1px solid var(--line);}
   .category.open .category-body{display:block; animation:fadein .18s ease;}
   .category-head, .exercise-item{-webkit-user-select:none; user-select:none; -webkit-touch-callout:none;}
@@ -121,6 +125,11 @@
   .cal-day.selected{background:var(--red); border-color:var(--red); color:#fff;}
   .cal-day .dot{width:5px; height:5px; border-radius:50%; background:var(--green); position:absolute; bottom:5px;}
   .cal-day.selected .dot{background:#fff;}
+  .cal-day .cal-day-cats{display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1; margin-top:2px; width:100%; overflow:hidden; padding:0 2px;}
+  .cal-day .cal-day-cats span{font-weight:700; white-space:nowrap; color:var(--blue);}
+  .cal-day.selected .cal-day-cats span{color:#fff;}
+  .cal-day .bw-value{font-size:10px; font-weight:700; color:var(--green); margin-top:2px;}
+  .cal-day.selected .bw-value{color:#fff;}
   .cal-empty{background:none; border:none;}
   .day-detail{margin-bottom:20px;}
   .day-detail h3{font-size:15px; margin:0 0 10px;}
@@ -171,6 +180,9 @@
   .protein-size-pill{flex:1; text-align:center; background:var(--surface-2); border:1px solid var(--line); color:var(--text-dim); padding:9px; border-radius:10px; font-size:13px; font-weight:600;}
   .protein-size-pill.active{background:var(--yellow); color:#1a1a1a; border-color:var(--yellow);}
   .protein-mode-toggle{background:none; border:none; color:var(--blue); font-size:12.5px; text-decoration:underline; padding:0;}
+  .meal-type-row{display:flex; gap:8px; margin:14px 0 10px;}
+  .meal-type-btn{flex:1; text-align:center; background:var(--surface-2); border:1px solid var(--line); color:var(--text-dim); padding:10px; border-radius:10px; font-size:13px; font-weight:600;}
+  .meal-type-btn.active{background:var(--blue); color:#fff; border-color:var(--blue);}
 
   .plate-unit-tag{align-self:center; color:var(--text-dim); font-weight:700; font-size:13px; padding:0 4px 0 8px; text-transform:uppercase;}
   .plate-stack{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;}
@@ -271,7 +283,7 @@
   .action-row{display:flex; gap:10px;}
   .save-btn{flex:1; background:var(--green); border:none; color:#fff; padding:15px; border-radius:12px; font-weight:700; font-size:15px; box-shadow:0 4px 14px rgba(70,172,121,0.3);}
   .clear-btn{flex:1; background:var(--surface-2); border:1px solid var(--line); color:var(--text); padding:15px; border-radius:12px; font-weight:600; font-size:15px;}
-  .rest-btn{width:100%; background:var(--surface-2); border:1px solid var(--line); color:var(--text-dim); padding:13px; border-radius:12px; font-size:14px; font-weight:600; margin-top:12px;}
+  .rest-btn{width:100%; background:var(--blue); border:1px solid var(--blue); color:#fff; padding:13px; border-radius:12px; font-size:14px; font-weight:700; margin-top:12px; box-shadow:var(--shadow-sm);}
 
   .today-sets{margin-top:8px;}
   .today-sets h3{font-size:13px; margin:0 0 12px; font-weight:700; font-family:'Inter',sans-serif; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.6px;}
@@ -299,7 +311,7 @@
   .preset-row{display:flex; gap:12px; margin-bottom:22px;}
   .preset-btn{background:var(--surface); border:1px solid var(--line); color:var(--text); font-size:19px; font-weight:700; font-family:'Barlow Condensed',sans-serif; padding:17px 23px; border-radius:14px; box-shadow:var(--shadow-sm);}
   .cancel-btn{background:none; border:none; color:var(--text-dim); font-size:14.5px; margin-top:22px; text-decoration:underline;}
-  .timer-pill{display:none; position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--red); color:#fff; padding:13px 24px; border-radius:26px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:18px; z-index:55; box-shadow:0 6px 18px rgba(224,86,58,0.4);}
+  .timer-pill{display:none; position:fixed; bottom:26px; left:50%; transform:translateX(-50%); background:var(--red); color:#fff; padding:20px 38px; border-radius:34px; font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:28px; z-index:55; box-shadow:0 8px 24px rgba(224,86,58,0.45);}
 </style>
 </head>
 <body>
@@ -351,7 +363,7 @@
   <div class="tabs">
     <button class="tab active" data-prog-tab="overview" data-i18n="tab_overview">Overview</button>
     <button class="tab" data-prog-tab="records" data-i18n="tab_records">Records</button>
-    <button class="tab" data-prog-tab="goals" data-i18n="tab_goals">Goals</button>
+    <button class="tab" data-prog-tab="bodyweight" data-i18n="tab_bodyweight">Body Weight</button>
   </div>
 
   <div class="tab-panel active" id="prog-overview">
@@ -378,9 +390,14 @@
     <div id="records-list"></div>
   </div>
 
-  <div class="tab-panel" id="prog-goals">
-    <button class="save-btn" id="add-goal-btn" style="width:100%; margin-bottom:16px;" data-i18n="add_a_goal">+ Add a goal</button>
-    <div id="goals-list"></div>
+  <div class="tab-panel" id="prog-bodyweight">
+    <div class="cal-header">
+      <button id="bw-cal-prev">‹</button>
+      <h2 id="bw-cal-month-label">September 2026</h2>
+      <button id="bw-cal-next">›</button>
+    </div>
+    <div class="cal-grid" id="bw-cal-grid"></div>
+    <div class="day-detail" id="bw-day-detail"></div>
   </div>
 </div>
 
@@ -394,21 +411,28 @@
   <div class="goal-pct" id="protein-pct" style="margin-bottom:20px;">0%</div>
 
   <div class="cal-header">
-    <button id="protein-prev-day">‹</button>
-    <h2 id="protein-date-label">Today</h2>
-    <button id="protein-next-day">›</button>
+    <button id="protein-cal-prev">‹</button>
+    <h2 id="protein-cal-month-label">September 2026</h2>
+    <button id="protein-cal-next">›</button>
   </div>
+  <div class="cal-grid" id="protein-cal-grid"></div>
+  <h3 id="protein-selected-date-label" style="margin:14px 0 6px;">Today</h3>
+  <div id="protein-entries-list"></div>
 
+  <div class="meal-type-row" id="protein-meal-type-row">
+    <button class="meal-type-btn active" data-meal="breakfast" data-i18n="breakfast">Breakfast</button>
+    <button class="meal-type-btn" data-meal="lunch" data-i18n="lunch">Lunch</button>
+    <button class="meal-type-btn" data-meal="dinner" data-i18n="dinner">Dinner</button>
+  </div>
   <div class="protein-input-row" style="position:relative;">
     <input type="text" id="protein-label-input" placeholder="What did you eat (e.g. Chicken)" data-i18n-ph="protein_label_ph" autocomplete="off">
   </div>
   <div id="protein-suggest-list" class="protein-suggest-list"></div>
   <div id="protein-calc-area"></div>
+  <div class="label" id="protein-optional-hint" style="margin:6px 0; font-size:12px;" data-i18n="protein_optional_hint">Protein amount is optional</div>
   <div class="protein-input-row">
     <button id="protein-add-btn" style="flex:1;" data-i18n="add">Add</button>
   </div>
-
-  <div id="protein-entries-list"></div>
 </div>
 
 <!-- WEEK SELECT SCREEN (weekly-program categories) -->
@@ -571,7 +595,7 @@ const I18N = {
   en: {
     edit:'Edit', add:'Add', export:'⬇ Export', import:'⬆ Import',
     new_category_ph:'New category name',
-    tab_overview:'Overview', tab_records:'Records', tab_goals:'Goals',
+    tab_overview:'Overview', tab_records:'Records', tab_goals:'Goals', tab_bodyweight:'Body Weight',
     total_workouts:'Total workouts', day_streak:'Day streak',
     view_monthly_report:'📋 View monthly report',
     volume_caption:'Total training volume per week (all exercises)',
@@ -598,11 +622,23 @@ const I18N = {
     theme_dark:'🌙 Dark', theme_light:'☀️ Light',
     me_done_banner:"Next session's top set will be whatever you went heaviest on today — add extra sets any time you've got more in the tank.",
     clean_bump_banner:'Complete every set clean next time and that side goes up another 5 lb.',
+    reps_word:'reps', combined:'combined', missed:'missed', kg_unit:'kg',
+    no_sets_today:'No sets logged today yet.', no_history_yet:'No history yet for this exercise.',
+    no_records_yet:'No completed sets yet. Log a few workouts and your personal bests will show up here.',
+    no_bw_day:'No weight logged this day.', bw_comment_ph:'Comment (optional)',
+    log_bodyweight:'Log body weight', bodyweight_label:'Body weight',
+    add_exercise:'+ Add exercise', breakfast:'Breakfast', lunch:'Lunch', dinner:'Dinner',
+    protein_optional_hint:'Protein amount is optional', no_food_day:'Nothing logged for this day.',
+    rename:'Rename', rename_category_prompt:'New name for this category:', rename_exercise_prompt:'New name for this exercise:',
+    target_word:'target',
+    exercise_name_prompt:'Exercise name (must match exactly):', weight_prompt:'Weight',
+    side_prompt:'Which side? Type LH or RH:', food_name_ph:'What did you eat (e.g. Chicken)',
+    meal_type_prompt:'Meal (breakfast/lunch/dinner):', protein_header:'Protein', calendar_header:'Calendar',
   },
   zh: {
     edit:'編輯', add:'新增', export:'⬇ 匯出', import:'⬆ 匯入',
     new_category_ph:'新類別名稱',
-    tab_overview:'總覽', tab_records:'紀錄', tab_goals:'目標',
+    tab_overview:'總覽', tab_records:'最高紀錄', tab_goals:'目標', tab_bodyweight:'體重',
     total_workouts:'總訓練次數', day_streak:'連續天數',
     view_monthly_report:'📋 查看月報告',
     volume_caption:'每週總訓練量（所有動作）',
@@ -629,6 +665,18 @@ const I18N = {
     theme_dark:'🌙 深色', theme_light:'☀️ 淺色',
     me_done_banner:'下次的最高組重量將以你今天做到的最重一組為準——只要還有餘力，隨時可以多加一組。',
     clean_bump_banner:'下次乾淨完成所有組數，這一側就會增加5磅。',
+    reps_word:'下', combined:'合計', missed:'失敗', kg_unit:'公斤',
+    no_sets_today:'今天還沒有記錄任何組數。', no_history_yet:'這個動作還沒有歷史紀錄。',
+    no_records_yet:'還沒有完成的組數。記錄幾次訓練後，你的最佳紀錄就會顯示在這裡。',
+    no_bw_day:'這一天沒有體重紀錄。', bw_comment_ph:'備註（選填）',
+    log_bodyweight:'記錄體重', bodyweight_label:'體重',
+    add_exercise:'+ 新增動作', breakfast:'早餐', lunch:'午餐', dinner:'晚餐',
+    protein_optional_hint:'蛋白質數量為選填', no_food_day:'這一天還沒有飲食紀錄。',
+    rename:'重新命名', rename_category_prompt:'這個類別的新名稱：', rename_exercise_prompt:'這個動作的新名稱：',
+    target_word:'目標',
+    exercise_name_prompt:'動作名稱（需完全符合）：', weight_prompt:'重量',
+    side_prompt:'哪一邊？請輸入 LH 或 RH：', food_name_ph:'吃了什麼（例如：雞肉）',
+    meal_type_prompt:'餐別（早餐/午餐/晚餐）：', protein_header:'蛋白質', calendar_header:'行事曆',
   }
 };
 function t(key, vars){
@@ -651,6 +699,12 @@ function setLang(lang){
   applyStaticI18n();
   if(typeof applyTheme==='function') applyTheme();
   if(currentExercise && typeof renderTrack==='function') renderTrack();
+  if(typeof renderCalendar==='function') renderCalendar();
+  if(typeof renderRecords==='function') renderRecords();
+  if(typeof renderGoals==='function') renderGoals();
+  if(typeof renderBodyWeightCalendar==='function') renderBodyWeightCalendar();
+  if(typeof renderProteinCalendar==='function') renderProteinCalendar();
+  if(typeof renderProtein==='function') renderProtein();
 }
 document.getElementById('lang-en').onclick = ()=> setLang('en');
 document.getElementById('lang-zh').onclick = ()=> setLang('zh');
@@ -758,6 +812,14 @@ function convertAllWeightsForUnitChange(fromUnit, toUnit){
     if(isArmwrestlingExercise(g.name)) return;
     if(g.weight!=null) g.weight = convertWeightValue(g.weight, fromUnit, toUnit, g.name);
   });
+  if(data.bodyweightLogs){
+    Object.values(data.bodyweightLogs).forEach(entry=>{
+      if(entry.weight!=null){
+        const raw = fromUnit==='lb' ? (entry.weight*LB_PER_KG) : (entry.weight/LB_PER_KG);
+        entry.weight = Math.round(raw*10)/10;
+      }
+    });
+  }
 }
 function syncUnitUI(u){
   document.getElementById('unit-lb').classList.toggle('active',u==='lb');
@@ -769,7 +831,7 @@ function setUnit(u){
   data.unit=u; save();
   syncUnitUI(u);
   if(currentExercise) renderTrack();
-  renderGoals();
+  if(typeof renderBodyWeightCalendar==='function') renderBodyWeightCalendar();
   showToast('Weights converted to '+u.toUpperCase());
 }
 
@@ -879,7 +941,7 @@ function applyScreen(name){
     headerTitle.textContent = currentExercise; headerTitle.style.fontSize='19px';
   } else if(name==='calendar'){
     screenCalendar.classList.add('active');
-    headerTitle.textContent='Calendar'; headerTitle.style.fontSize='20px';
+    headerTitle.textContent=t('calendar_header'); headerTitle.style.fontSize='20px';
     renderCalendar();
   } else if(name==='week-select'){
     screenWeekSelect.classList.add('active');
@@ -895,9 +957,9 @@ function applyScreen(name){
     renderWeekLog();
   } else if(name==='protein'){
     screenProtein.classList.add('active');
-    headerTitle.textContent = 'Protein'; headerTitle.style.fontSize='20px';
+    headerTitle.textContent = t('protein_header'); headerTitle.style.fontSize='20px';
     if(typeof resetProteinInputArea==='function') resetProteinInputArea();
-    renderProtein();
+    renderProteinCalendar();
   }
 }
 function pushScreen(name){ navStack.push(name); applyScreen(name); }
@@ -942,6 +1004,36 @@ function setModeUI(mode){
 
 /* ---------- Picker rendering ---------- */
 const categoryList = document.getElementById('category-list');
+function renameCategory(oldName){
+  if(oldName==='Armwrestling'){ showToast("Armwrestling can't be renamed"); return; }
+  const val = prompt(t('rename_category_prompt'), oldName);
+  if(val===null) return;
+  const trimmed = val.trim();
+  if(!trimmed || trimmed===oldName) return;
+  if(data.categories[trimmed]){ showToast('A category with that name already exists'); return; }
+  const rebuilt = {};
+  Object.entries(data.categories).forEach(([k,v])=>{ rebuilt[k===oldName ? trimmed : k] = v; });
+  data.categories = rebuilt;
+  save();
+  renderPicker();
+}
+function renameExercise(oldName, cat){
+  const val = prompt(t('rename_exercise_prompt'), oldName);
+  if(val===null) return;
+  const trimmed = val.trim();
+  if(!trimmed || trimmed===oldName) return;
+  if(data.categories[cat].find(e=>e.name===trimmed)){ showToast('An exercise with that name already exists'); return; }
+  const ex = data.categories[cat].find(e=>e.name===oldName);
+  if(!ex) return;
+  ex.name = trimmed;
+  if(data.logs[oldName]){ data.logs[trimmed] = data.logs[oldName]; delete data.logs[oldName]; }
+  if(data.finishedSessions && data.finishedSessions[oldName]){ data.finishedSessions[trimmed] = data.finishedSessions[oldName]; delete data.finishedSessions[oldName]; }
+  if(data.goals) data.goals.forEach(g=>{ if(g.name===oldName) g.name = trimmed; });
+  if(data.bodyweightLogs){ /* body weight logs are not per-exercise, unaffected */ }
+  if(currentExercise===oldName) currentExercise = trimmed;
+  save();
+  renderPicker();
+}
 function renderPicker(){
   categoryList.innerHTML='';
   categoryList.classList.toggle('editing', editing);
@@ -955,13 +1047,13 @@ function renderPicker(){
     catEl.innerHTML = `
       <div class="category-head" data-toggle-cat>
         <span class="left"><span class="chevron">›</span><span>${cat}</span>${nextHint}</span>
-        <button class="cat-del" data-cat-del="${cat}">Delete</button>
+        <span>${cat!=='Armwrestling' ? `<button class="cat-rename" data-cat-rename="${cat}">${t('rename')}</button>` : ''}<button class="cat-del" data-cat-del="${cat}">Delete</button></span>
       </div>
       <div class="category-body">
         ${exercises.map(e=>`
           <div class="exercise-item" data-name="${e.name}">
             <span>${e.name}${e.mode==='531' ? '<span class="tag">5/3/1</span>' : ''}</span>
-            <button class="ex-del" data-ex-del="${e.name}" data-ex-cat="${cat}">✕</button>
+            <span><button class="ex-rename" data-ex-rename="${e.name}" data-ex-cat="${cat}">✎</button><button class="ex-del" data-ex-del="${e.name}" data-ex-cat="${cat}">✕</button></span>
           </div>`).join('')}
         <div class="add-exercise-row">
           <input type="text" placeholder="Add exercise to ${cat}" data-cat-input="${cat}">
@@ -979,11 +1071,23 @@ categoryList.addEventListener('click', (ev)=>{
   if(suppressNextClick){ suppressNextClick = false; return; }
   const catHead = ev.target.closest('[data-toggle-cat]');
   const catDel = ev.target.closest('[data-cat-del]');
+  const catRename = ev.target.closest('[data-cat-rename]');
   const exDel = ev.target.closest('[data-ex-del]');
+  const exRename = ev.target.closest('[data-ex-rename]');
   const catAdd = ev.target.closest('[data-cat-add]');
   const exItem = ev.target.closest('.exercise-item');
   const catEl = ev.target.closest('.category');
 
+  if(catRename){
+    ev.stopPropagation();
+    renameCategory(catRename.dataset.catRename);
+    return;
+  }
+  if(exRename){
+    ev.stopPropagation();
+    renameExercise(exRename.dataset.exRename, exRename.dataset.exCat);
+    return;
+  }
   if(catDel){
     ev.stopPropagation();
     const cat = catDel.dataset.catDel;
@@ -1218,6 +1322,8 @@ function renderTrack(){
 
 function isArmwrestlingExercise(name){ return findCategoryOf(name)==='Armwrestling'; }
 function unitFor(ex){ return isArmwrestlingExercise(ex.name) ? 'lb' : data.unit; }
+function unitLabel(u){ return (data.lang==='zh' && u==='kg') ? t('kg_unit') : u; }
+function localeCode(){ return data.lang==='zh' ? 'zh-TW' : 'en-US'; }
 function incrementFor(ex){ return isArmwrestlingExercise(ex.name) ? 5 : progressionIncrement(ex.isLower); }
 function roundWeightFor(w, unit, name){
   if(unit==='kg') return Math.round(w/2.5)*2.5;
@@ -1271,11 +1377,11 @@ function renderTrack531(ex, container, onChange){
     setsHtml += `
       <div class="set-row">
         <div class="set-info">
-          <div class="num">${weight} ${u} <button class="plate-trigger-btn" data-weight="${weight}" data-plate-unit="${u}" title="Plate calculator">🏋️</button></div>
-          <div class="reps">${Math.round(p*100)}% × ${wk.reps[i]}${isFailed ? ` <span class="failed-tag">missed · ${entry.reps} reps</span>` : ''}${beatIt ? ` <span style="color:var(--green); font-weight:700;">(+) ${entry.reps} reps — TM up next session</span>` : ''}</div>
+          <div class="num">${weight} ${unitLabel(u)} <button class="plate-trigger-btn" data-weight="${weight}" data-plate-unit="${u}" title="Plate calculator">🏋️</button></div>
+          <div class="reps">${Math.round(p*100)}% × ${wk.reps[i]}${isFailed ? ` <span class="failed-tag">${t('missed')} · ${entry.reps} ${t('reps_word')}</span>` : ''}${beatIt ? ` <span style="color:var(--green); font-weight:700;">(+) ${entry.reps} ${t('reps_word')} — TM up next session</span>` : ''}</div>
         </div>
         <div class="set-actions">
-          ${i===2 && !isDone ? `<input type="number" class="amrap-input" data-amrap-input placeholder="reps">` : ''}
+          ${i===2 && !isDone ? `<input type="number" class="amrap-input" data-amrap-input placeholder="${t('reps_word')}">` : ''}
           <button class="check-btn ${isPassed?'done':''}" data-set-idx="${i}" data-weight="${weight}" data-action="pass" ${isFailed?'disabled':''}>✓</button>
           <button class="fail-btn ${isFailed?'done':''}" data-set-idx="${i}" data-weight="${weight}" data-action="fail" ${isPassed?'disabled':''}>✕</button>
         </div>
@@ -1292,8 +1398,8 @@ function renderTrack531(ex, container, onChange){
     bbbSetsHtml += `
       <div class="set-row">
         <div class="set-info">
-          <div class="num">${bbbWeight} ${u} <button class="plate-trigger-btn" data-weight="${bbbWeight}" data-plate-unit="${u}" title="Plate calculator">🏋️</button></div>
-          <div class="reps">50% × 10${isFailed ? ` <span class="failed-tag">missed · ${entry.reps} reps</span>` : ''}</div>
+          <div class="num">${bbbWeight} ${unitLabel(u)} <button class="plate-trigger-btn" data-weight="${bbbWeight}" data-plate-unit="${u}" title="Plate calculator">🏋️</button></div>
+          <div class="reps">50% × 10${isFailed ? ` <span class="failed-tag">${t('missed')} · ${entry.reps} ${t('reps_word')}</span>` : ''}</div>
         </div>
         <div class="set-actions">
           <button class="check-btn ${isPassed?'done':''}" data-bbb-idx="${i}" data-weight="${bbbWeight}" data-action="pass" ${isFailed?'disabled':''}>✓</button>
@@ -1309,7 +1415,7 @@ function renderTrack531(ex, container, onChange){
   container.innerHTML = `
     <div class="guide-card">
       <div class="guide-top">
-        <span class="tm-line">${t('training_max')} <b>${ex.tm} ${u}</b></span>
+        <span class="tm-line">${t('training_max')} <b>${ex.tm} ${unitLabel(u)}</b></span>
         <button class="edit-1rm" data-edit-1rm>${t('edit_1rm')}</button>
       </div>
       <span class="week-badge">${wk.label} · Cycle ${Math.floor(priorDays/4)+1}</span>
@@ -1439,7 +1545,7 @@ function renderTrackRegular(ex){
         <span class="label">${t('reps_label')}</span>
         <div class="stepper-row">
           <button class="step-btn" id="r-minus">−</button>
-          <div class="step-value" id="r-value">0</div>
+          <div class="step-value editable" id="r-value">0</div>
           <button class="step-btn" id="r-plus">+</button>
         </div>
       </div>
@@ -1456,7 +1562,7 @@ function renderTrackRegular(ex){
   stepWeight = lastSet ? lastSet.weight : (planSuggestedWeight!==null ? planSuggestedWeight : 0);
   stepReps = lastSet ? lastSet.reps : 0;
   updateSteppers();
-  const inc = data.unit==='kg' ? 1 : 2.5;
+  const inc = 2.5;
   document.getElementById('w-minus').onclick=()=>{ stepWeight=Math.max(0, stepWeight-inc); updateSteppers(); };
   document.getElementById('w-plus').onclick=()=>{ stepWeight+=inc; updateSteppers(); };
   document.getElementById('r-minus').onclick=()=>{ stepReps=Math.max(0, stepReps-1); updateSteppers(); };
@@ -1476,6 +1582,21 @@ function renderTrackRegular(ex){
     inp.addEventListener('blur', commit);
     inp.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter') inp.blur(); });
   };
+  document.getElementById('r-value').onclick=()=>{
+    const rEl = document.getElementById('r-value');
+    const current = stepReps;
+    rEl.innerHTML = `<input type="number" id="r-edit-input" step="1" style="width:100%; background:transparent; border:none; color:var(--text); font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:32px; text-align:center; outline:none;">`;
+    const inp = document.getElementById('r-edit-input');
+    inp.value = current;
+    inp.focus(); inp.select();
+    const commit = ()=>{
+      const val = parseInt(inp.value);
+      stepReps = isNaN(val) ? current : Math.max(0, val);
+      updateSteppers();
+    };
+    inp.addEventListener('blur', commit);
+    inp.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter') inp.blur(); });
+  };
   document.getElementById('clear-set').onclick=()=>{ stepWeight=0; stepReps=0; updateSteppers(); };
   document.getElementById('finish-exercise').onclick=()=>{
     if(!data.finishedSessions[ex.name]) data.finishedSessions[ex.name]=[];
@@ -1490,6 +1611,7 @@ function renderTrackRegular(ex){
     if(!data.logs[ex.name]) data.logs[ex.name]=[];
     data.logs[ex.name].push({date:todayStr(), weight:stepWeight, reps:stepReps});
     save();
+    autoStartRest();
     renderTodayList();
   };
   document.getElementById('track-rest').onclick=()=>openTimer();
@@ -1504,11 +1626,11 @@ function updateSteppers(){
 function renderTodayList(){
   const list = document.getElementById('today-list');
   const all = (data.logs[currentExercise]||[]).filter(s=>s.date===todayStr());
-  if(all.length===0){ list.innerHTML='<div class="empty">No sets logged today yet.</div>'; return; }
+  if(all.length===0){ list.innerHTML=`<div class="empty">${t('no_sets_today')}</div>`; return; }
   list.innerHTML = all.map((s,i)=>`
     <div class="set-line">
       <div class="set-idx ${s.failed?'idx-failed':''}">${i+1}</div>
-      <div class="vals ${s.failed?'failed':''}">${s.weight} ${data.unit} × ${s.reps} reps${s.failed?' · missed':''}</div>
+      <div class="vals ${s.failed?'failed':''}">${s.weight} ${unitLabel(data.unit)} × ${s.reps} ${t('reps_word')}${s.failed?' · '+t('missed'):''}</div>
       <button class="del-btn" data-idx="${i}">✕</button>
     </div>
   `).join('');
@@ -1529,7 +1651,7 @@ function renderHistory(name, el){
   el = el || document.getElementById('history-list');
   const unit = isArmwrestlingExercise(name) ? 'lb' : data.unit;
   const logs = data.logs[name]||[];
-  if(logs.length===0){ el.innerHTML='<div class="empty">No history yet for this exercise.</div>'; return; }
+  if(logs.length===0){ el.innerHTML=`<div class="empty">${t('no_history_yet')}</div>`; return; }
   const byDate = {};
   logs.forEach(s=>{ (byDate[s.date] = byDate[s.date]||[]).push(s); });
   const dates = Object.keys(byDate).sort().reverse();
@@ -1539,7 +1661,7 @@ function renderHistory(name, el){
       <div class="card">
         ${byDate[d].map((s,i)=>{
           const realIdx = logs.indexOf(s);
-          return `<div class="set-line"><div class="set-idx ${s.failed?'idx-failed':''}">${i+1}</div><div class="vals ${s.failed?'failed':''}" data-hist-edit="${realIdx}" style="cursor:pointer;">${s.side?`<b>${s.side}</b> · `:''}${s.weight} ${unit} × ${s.reps} reps${s.bbb?' · BBB':''}${s.failed?' · missed':''}</div><button class="del-btn" data-hist-del="${realIdx}">✕</button></div>`;
+          return `<div class="set-line"><div class="set-idx ${s.failed?'idx-failed':''}">${i+1}</div><div class="vals ${s.failed?'failed':''}" data-hist-edit="${realIdx}" style="cursor:pointer;">${s.side?`<b>${s.side}</b> · `:''}${s.weight} ${unitLabel(unit)} × ${s.reps} ${t('reps_word')}${s.bbb?' · BBB':''}${s.failed?' · '+t('missed'):''}</div><button class="del-btn" data-hist-del="${realIdx}">✕</button></div>`;
         }).join('')}
       </div>
     </div>
@@ -1779,7 +1901,7 @@ function updateDisplay(s){ const m=Math.floor(s/60); const ss=s%60; timerDisplay
 function updatePill(s){
   if(overlay.classList.contains('active')){ timerPill.style.display='none'; return; }
   const m=Math.floor(s/60), ss=s%60;
-  timerPill.textContent = '⏱ '+m+':'+String(ss).padStart(2,'0')+' resting';
+  timerPill.textContent = '⏱ '+m+':'+String(ss).padStart(2,'0')+' '+t('resting');
   timerPill.style.display='block';
 }
 timerPill.onclick=()=>openTimer();
@@ -1834,6 +1956,40 @@ function allLoggedDates(){
   Object.values(data.logs).forEach(arr=> arr.forEach(s=>set.add(s.date)));
   return set;
 }
+const CATEGORY_NAME_MAP = {
+  'Main Lifts': {en:'Main Lifts', zh:'主要動作'},
+  'Chest': {en:'Chest', zh:'胸'},
+  'Back': {en:'Back', zh:'背'},
+  'Legs': {en:'Legs', zh:'腿'},
+  'Shoulders': {en:'Shoulders', zh:'肩'},
+  'Biceps': {en:'Biceps', zh:'二頭'},
+  'Triceps': {en:'Triceps', zh:'三頭'},
+  'Abs': {en:'Abs', zh:'腹'},
+  'Cardio': {en:'Cardio', zh:'有氧'},
+  'Armwrestling': {en:'Armwrestling', zh:'臂力'},
+};
+function categoryDisplayName(cat){
+  const entry = CATEGORY_NAME_MAP[cat];
+  if(entry) return data.lang==='zh' ? entry.zh : entry.en;
+  return cat;
+}
+function calLabelFontSize(text, multi){
+  const base = multi ? 8 : 9.5;
+  if(text.length<=2) return base;
+  if(text.length<=4) return base-1;
+  if(text.length<=7) return base-2.5;
+  return Math.max(5.5, base-4);
+}
+function categoriesTrainedOn(dateStr){
+  const cats = new Set();
+  Object.entries(data.logs).forEach(([name, arr])=>{
+    if(arr.some(s=>s.date===dateStr)){
+      const cat = findCategoryOf(name);
+      if(cat) cats.add(cat);
+    }
+  });
+  return cats;
+}
 function computeStreak(loggedDates){
   let streak = 0;
   let cursor = new Date();
@@ -1851,7 +2007,7 @@ function formatDateLabel(dStr){
 
 function renderCalendar(){
   const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
-  document.getElementById('cal-month-label').textContent = calViewDate.toLocaleString(undefined, {month:'long', year:'numeric'});
+  document.getElementById('cal-month-label').textContent = calViewDate.toLocaleString(localeCode(), {month:'long', year:'numeric'});
   const loggedDates = allLoggedDates();
   const grid = document.getElementById('cal-grid');
   grid.innerHTML = '';
@@ -1868,7 +2024,20 @@ function renderCalendar(){
     const dStr = formatDate(new Date(year, month, d));
     const el = document.createElement('div');
     el.className = 'cal-day in-month' + (dStr===todayStrVal ? ' today':'') + (dStr===selectedDate ? ' selected':'');
-    el.innerHTML = `${d}${loggedDates.has(dStr) ? '<span class="dot"></span>' : ''}`;
+    let catsHtml = '';
+    if(loggedDates.has(dStr)){
+      const cats = [...categoriesTrainedOn(dStr)];
+      if(cats.length>0){
+        const multi = cats.length>1;
+        catsHtml = `<div class="cal-day-cats${multi?' multi':''}">${cats.map(c=>{
+          const label = categoryDisplayName(c);
+          return `<span style="font-size:${calLabelFontSize(label, multi)}px;">${label}</span>`;
+        }).join('')}</div>`;
+      } else {
+        catsHtml = '<span class="dot"></span>';
+      }
+    }
+    el.innerHTML = `${d}${catsHtml}`;
     el.onclick = ()=>{ selectedDate = dStr; renderCalendar(); };
     grid.appendChild(el);
   }
@@ -1877,6 +2046,7 @@ function renderCalendar(){
   document.getElementById('stat-total').textContent = loggedDates.size;
   document.getElementById('stat-streak').textContent = computeStreak(loggedDates);
 }
+let expandedDayExercises = new Set();
 function renderDayDetail(){
   const el = document.getElementById('day-detail');
   const entries = [];
@@ -1886,16 +2056,60 @@ function renderDayDetail(){
   });
   const proteinTotal = (typeof proteinTotalFor==='function') ? proteinTotalFor(selectedDate) : 0;
   const proteinLine = proteinTotal>0 ? `<div class="week-badge" style="background:var(--surface-2); color:var(--yellow);">🍗 ${proteinTotal}g protein</div>` : '';
+  const addBtnHtml = `<button class="rest-btn" id="day-add-exercise-btn" style="margin-bottom:14px;">${t('add_exercise')}</button>`;
   if(entries.length===0){
-    el.innerHTML = `<h3>${formatDateLabel(selectedDate)}</h3>${proteinLine}<div class="empty">${t('no_exercises_day')}</div>`;
-    return;
-  }
-  el.innerHTML = `<h3>${formatDateLabel(selectedDate)}</h3>${proteinLine}` + entries.map(({exName,sets})=>`
-    <div class="card" style="padding:12px 16px; margin-bottom:10px;">
-      <div style="font-weight:600; font-size:14px; margin-bottom:4px;">${exName}</div>
-      ${sets.map((s,i)=>`<div class="set-line"><div class="set-idx ${s.failed?'idx-failed':''}">${i+1}</div><div class="vals ${s.failed?'failed':''}">${s.weight} ${data.unit} × ${s.reps} reps${s.bbb?' · BBB':''}${s.failed?' · missed':''}</div></div>`).join('')}
+    el.innerHTML = `<h3>${formatDateLabel(selectedDate)}</h3>${proteinLine}${addBtnHtml}<div class="empty">${t('no_exercises_day')}</div>`;
+  } else {
+    el.innerHTML = `<h3>${formatDateLabel(selectedDate)}</h3>${proteinLine}${addBtnHtml}` + entries.map(({exName,sets})=>{
+      const isOpen = expandedDayExercises.has(exName);
+      return `
+    <div class="card day-ex-card" data-day-ex="${exName}" style="padding:12px 16px; margin-bottom:10px; cursor:pointer;">
+      <div style="font-weight:600; font-size:14px; display:flex; justify-content:space-between; align-items:center;">
+        <span>${exName}</span><span style="color:var(--text-dim); font-size:12px;">${isOpen ? '▲' : '▼ '+sets.length}</span>
+      </div>
+      ${isOpen ? sets.map((s,i)=>`<div class="set-line"><div class="set-idx ${s.failed?'idx-failed':''}">${i+1}</div><div class="vals ${s.failed?'failed':''}">${s.weight} ${unitLabel(data.unit)} × ${s.reps} ${t('reps_word')}${s.bbb?' · BBB':''}${s.failed?' · '+t('missed'):''}</div></div>`).join('') : ''}
     </div>
-  `).join('');
+  `;
+    }).join('');
+    el.querySelectorAll('[data-day-ex]').forEach(cardEl=>{
+      cardEl.onclick = ()=>{
+        const name = cardEl.dataset.dayEx;
+        if(expandedDayExercises.has(name)) expandedDayExercises.delete(name);
+        else expandedDayExercises.add(name);
+        renderDayDetail();
+      };
+    });
+  }
+  const addBtn = document.getElementById('day-add-exercise-btn');
+  if(addBtn) addBtn.onclick = (ev)=>{ ev.stopPropagation(); addExerciseForSelectedDate(); };
+}
+function addExerciseForSelectedDate(){
+  const names = allExerciseNames();
+  if(names.length===0){ showToast('Add some exercises first'); return; }
+  const name = prompt(t('exercise_name_prompt')+'\n'+names.slice(0,12).join(', ')+(names.length>12?'...':''));
+  if(!name) return;
+  if(!names.includes(name)){ showToast('No exercise found with that exact name'); return; }
+  const isArm = isArmwrestlingExercise(name);
+  const u = isArm ? 'lb' : data.unit;
+  const weightVal = prompt(t('weight_prompt')+' ('+unitLabel(u)+'):');
+  if(weightVal===null) return;
+  const weight = parseFloat(weightVal);
+  if(isNaN(weight) || weight<0){ showToast('Enter a valid weight'); return; }
+  const repsVal = prompt(t('reps_word')+':');
+  if(repsVal===null) return;
+  const reps = parseInt(repsVal);
+  if(isNaN(reps) || reps<0){ showToast('Enter a valid rep count'); return; }
+  const entry = {date:selectedDate, weight, reps};
+  if(isArm){
+    const sideVal = (prompt(t('side_prompt'), 'LH')||'').trim().toUpperCase();
+    if(sideVal==='LH' || sideVal==='RH') entry.side = sideVal;
+  }
+  if(!data.logs[name]) data.logs[name]=[];
+  data.logs[name].push(entry);
+  save();
+  expandedDayExercises.add(name);
+  renderCalendar();
+  showToast('Exercise added');
 }
 function renderVolumeChart(){
   const svg = document.getElementById('volume-chart');
@@ -1948,7 +2162,7 @@ document.querySelectorAll('[data-prog-tab]').forEach(t=>{
     document.querySelectorAll('#screen-calendar .tab-panel').forEach(p=>p.classList.remove('active'));
     document.getElementById('prog-'+t.dataset.progTab).classList.add('active');
     if(t.dataset.progTab==='records') renderRecords();
-    if(t.dataset.progTab==='goals') renderGoals();
+    if(t.dataset.progTab==='bodyweight') renderBodyWeightCalendar();
   };
 });
 
@@ -1984,102 +2198,124 @@ function computePR(name){
   });
   return {hasSides:false, best, isDb, unit};
 }
+let openRecordsCategory = null;
 function renderRecords(){
   const el = document.getElementById('records-list');
-  const names = allExerciseNames();
-  const rows = [];
-  names.forEach(name=>{
-    const pr = computePR(name);
-    if(!pr) return;
-    if(pr.hasSides){
-      Object.entries(pr.sides).forEach(([side,s])=>{
-        rows.push({name: name+' ('+side+')', weight:s.weight, reps:s.reps, date:s.date, unit:pr.unit});
-      });
-    } else {
-      const displayWeight = pr.isDb ? pr.best.weight*2 : pr.best.weight;
-      rows.push({name, weight:displayWeight, reps:pr.best.reps, date:pr.best.date, unit:pr.unit, note: pr.isDb?'combined':null});
-    }
+  const byCategory = {};
+  Object.entries(data.categories).forEach(([cat, exercises])=>{
+    byCategory[cat] = [];
+    exercises.forEach(ex=>{
+      const pr = computePR(ex.name);
+      if(!pr) return;
+      if(pr.hasSides){
+        Object.entries(pr.sides).forEach(([side,s])=>{
+          byCategory[cat].push({name: ex.name+' ('+side+')', weight:s.weight, reps:s.reps, date:s.date, unit:pr.unit});
+        });
+      } else {
+        const displayWeight = pr.isDb ? pr.best.weight*2 : pr.best.weight;
+        byCategory[cat].push({name: ex.name, weight:displayWeight, reps:pr.best.reps, date:pr.best.date, unit:pr.unit, note: pr.isDb?t('combined'):null});
+      }
+    });
   });
-  if(rows.length===0){
-    el.innerHTML = '<div class="empty">No completed sets yet. Log a few workouts and your personal bests will show up here.</div>';
+  const catsWithRecords = Object.keys(byCategory).filter(c=>byCategory[c].length>0);
+  if(catsWithRecords.length===0){
+    el.innerHTML = `<div class="empty">${t('no_records_yet')}</div>`;
     return;
   }
-  rows.sort((a,b)=> a.name.localeCompare(b.name));
-  el.innerHTML = rows.map(r=>`
-    <div class="record-row">
-      <div>
-        <div class="rname">${r.name}</div>
-        <div class="rdate">${formatDateLabel(r.date)}${r.note?' · '+r.note:''}</div>
-      </div>
-      <div class="rval">${r.weight} ${r.unit}<span class="sub">× ${r.reps} reps</span></div>
-    </div>
-  `).join('');
-}
-
-/* ---------- Goals ---------- */
-function estimatedE1RM(weight, reps){ return weight * (1 + reps/30); }
-function currentBestE1RM(name){
-  const pr = computePR(name);
-  if(!pr) return 0;
-  if(pr.hasSides){
-    return Math.max(...Object.values(pr.sides).map(s=>estimatedE1RM(s.weight, s.reps)));
-  }
-  const w = pr.isDb ? pr.best.weight*2 : pr.best.weight;
-  return estimatedE1RM(w, pr.best.reps);
-}
-document.getElementById('add-goal-btn').onclick = ()=>{
-  const names = allExerciseNames();
-  if(names.length===0){ showToast('Add some exercises first'); return; }
-  const name = prompt('Exercise name (must match exactly):\n'+names.slice(0,8).join(', ')+(names.length>8?'...':''));
-  if(!name) return;
-  if(!names.includes(name)){ showToast('No exercise found with that exact name'); return; }
-  const weightVal = prompt('Target weight:');
-  const weight = parseFloat(weightVal);
-  if(isNaN(weight) || weight<=0){ showToast('Enter a valid weight'); return; }
-  const repsVal = prompt('Target reps at that weight:', '1');
-  const reps = parseInt(repsVal);
-  if(isNaN(reps) || reps<=0){ showToast('Enter a valid rep count'); return; }
-  const dateVal = prompt('Target date (optional, YYYY-MM-DD):', '');
-  if(!data.goals) data.goals = [];
-  data.goals.push({id: Date.now(), name, weight, reps, targetDate: dateVal||null, createdDate: todayStr()});
-  save();
-  renderGoals();
-};
-function renderGoals(){
-  const el = document.getElementById('goals-list');
-  if(!data.goals) data.goals = [];
-  if(data.goals.length===0){
-    el.innerHTML = '<div class="empty">No goals yet. Set a target weight and rep count for any exercise and track your progress toward it.</div>';
-    return;
-  }
-  el.innerHTML = data.goals.map(g=>{
-    const unit = isArmwrestlingExercise(g.name) ? 'lb' : data.unit;
-    const targetE1RM = estimatedE1RM(g.weight, g.reps);
-    const currentE1RM = currentBestE1RM(g.name);
-    const pct = targetE1RM>0 ? Math.min(100, Math.round((currentE1RM/targetE1RM)*100)) : 0;
-    const done = pct>=100;
+  el.innerHTML = catsWithRecords.map(cat=>{
+    const rows = byCategory[cat].sort((a,b)=>a.name.localeCompare(b.name));
+    const isOpen = openRecordsCategory===cat;
     return `
-      <div class="goal-card">
-        <div class="goal-top">
-          <div>
-            <div class="goal-name">${g.name}</div>
-            <div class="goal-sub">Target: ${g.weight} ${unit} × ${g.reps}${g.targetDate?' by '+g.targetDate:''}</div>
-          </div>
-          <button class="goal-del" data-goal-del="${g.id}">✕</button>
+      <div class="category${isOpen?' open':''}">
+        <div class="category-head" data-rec-cat-toggle="${cat}">
+          <span class="left"><span class="chevron">›</span><span>${categoryDisplayName(cat)}</span></span>
+          <span style="color:var(--text-dim); font-size:12.5px; padding-right:4px;">${rows.length}</span>
         </div>
-        <div class="goal-bar-track"><div class="goal-bar-fill ${done?'done':''}" style="width:${pct}%;"></div></div>
-        <div class="goal-pct">${done ? '🎉 Goal reached' : pct+'% there'}</div>
+        <div class="category-body">
+          ${rows.map(r=>`
+            <div class="record-row">
+              <div>
+                <div class="rname">${r.name}</div>
+                <div class="rdate">${formatDateLabel(r.date)}${r.note?' · '+r.note:''}</div>
+              </div>
+              <div class="rval">${r.weight} ${unitLabel(r.unit)}<span class="sub">× ${r.reps} ${t('reps_word')}</span></div>
+            </div>
+          `).join('')}
+        </div>
       </div>
     `;
   }).join('');
-  el.querySelectorAll('[data-goal-del]').forEach(btn=>{
-    btn.onclick = ()=>{
-      const id = parseFloat(btn.dataset.goalDel);
-      data.goals = data.goals.filter(g=>g.id!==id);
-      save(); renderGoals();
+  el.querySelectorAll('[data-rec-cat-toggle]').forEach(elm=>{
+    elm.onclick = ()=>{
+      const cat = elm.dataset.recCatToggle;
+      openRecordsCategory = openRecordsCategory===cat ? null : cat;
+      renderRecords();
     };
   });
 }
+
+/* ---------- Body weight tracker ---------- */
+let bwViewDate = new Date();
+let bwSelectedDate = todayStr();
+function renderBodyWeightCalendar(){
+  if(!data.bodyweightLogs) data.bodyweightLogs = {};
+  const year = bwViewDate.getFullYear(), month = bwViewDate.getMonth();
+  document.getElementById('bw-cal-month-label').textContent = bwViewDate.toLocaleString(localeCode(), {month:'long', year:'numeric'});
+  const grid = document.getElementById('bw-cal-grid');
+  grid.innerHTML = '';
+  ['S','M','T','W','T','F','S'].forEach(d=>{
+    const el = document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el);
+  });
+  const startOffset = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayStrVal = todayStr();
+  for(let i=0;i<startOffset;i++){
+    const el = document.createElement('div'); el.className='cal-day cal-empty'; grid.appendChild(el);
+  }
+  for(let d=1; d<=daysInMonth; d++){
+    const dStr = formatDate(new Date(year, month, d));
+    const el = document.createElement('div');
+    el.className = 'cal-day in-month' + (dStr===todayStrVal ? ' today':'') + (dStr===bwSelectedDate ? ' selected':'');
+    const entry = data.bodyweightLogs[dStr];
+    el.innerHTML = `${d}${entry ? `<div class="bw-value">${entry.weight}</div>` : ''}`;
+    el.onclick = ()=>{ bwSelectedDate = dStr; renderBodyWeightCalendar(); };
+    grid.appendChild(el);
+  }
+  renderBwDayDetail();
+}
+function renderBwDayDetail(){
+  const el = document.getElementById('bw-day-detail');
+  const entry = data.bodyweightLogs[bwSelectedDate];
+  el.innerHTML = `
+    <h3>${formatDateLabel(bwSelectedDate)}</h3>
+    <div class="card" style="padding:14px 16px;">
+      <span class="label" id="bw-weight-unit-label">${t('bodyweight_label')} (${unitLabel(data.unit)})</span>
+      <input type="number" id="bw-weight-input" step="any" style="width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; color:var(--text); font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:26px; text-align:center; padding:10px; margin:8px 0 12px;" value="${entry?entry.weight:''}">
+      <textarea id="bw-comment-input" placeholder="${t('bw_comment_ph')}" style="width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; color:var(--text); font-family:inherit; font-size:13.5px; padding:10px; min-height:60px; resize:vertical;">${entry&&entry.comment?entry.comment:''}</textarea>
+      <div class="action-row" style="margin-top:12px;">
+        <button class="save-btn" id="bw-save-btn">${t('save')}</button>
+        ${entry ? `<button class="clear-btn" id="bw-delete-btn">${t('clear')}</button>` : ''}
+      </div>
+    </div>
+  `;
+  document.getElementById('bw-save-btn').onclick = ()=>{
+    const w = parseFloat(document.getElementById('bw-weight-input').value);
+    const comment = document.getElementById('bw-comment-input').value.trim();
+    if(isNaN(w) || w<=0){ showToast('Enter a valid weight'); return; }
+    data.bodyweightLogs[bwSelectedDate] = {weight:w, comment};
+    save();
+    renderBodyWeightCalendar();
+    showToast('Saved');
+  };
+  const delBtn = document.getElementById('bw-delete-btn');
+  if(delBtn) delBtn.onclick = ()=>{
+    delete data.bodyweightLogs[bwSelectedDate];
+    save();
+    renderBodyWeightCalendar();
+  };
+}
+document.getElementById('bw-cal-prev').onclick=()=>{ bwViewDate.setMonth(bwViewDate.getMonth()-1); renderBodyWeightCalendar(); };
+document.getElementById('bw-cal-next').onclick=()=>{ bwViewDate.setMonth(bwViewDate.getMonth()+1); renderBodyWeightCalendar(); };
 
 /* ---------- Monthly report ---------- */
 function hideMonthlyReport(){ document.getElementById('monthly-report-card').innerHTML=''; }
@@ -2087,7 +2323,7 @@ document.getElementById('monthly-report-btn').onclick = ()=>{
   const card = document.getElementById('monthly-report-card');
   if(card.innerHTML){ card.innerHTML=''; return; }
   const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
-  const monthLabel = calViewDate.toLocaleString(undefined, {month:'long', year:'numeric'});
+  const monthLabel = calViewDate.toLocaleString(localeCode(), {month:'long', year:'numeric'});
   const inMonth = s=>{ const [y,m] = s.date.split('-').map(Number); return y===year && (m-1)===month; };
 
   let totalSets=0, totalVolume=0, exercisesTrained=new Set(), trainingDays=new Set(), prsThisMonth=[];
@@ -2377,7 +2613,7 @@ function renderWeekLog(){
         <div class="side-set-row">
           <div class="side-set-info">
             <div class="num">${isDone ? entry.weight : (rowWeight!==null ? rowWeight : '?')} lb ${(isDone || rowWeight!==null) ? `<button class="plate-trigger-btn" data-weight="${isDone ? entry.weight : rowWeight}" data-plate-unit="lb" title="Plate calculator">🏋️</button>` : ''}</div>
-            <div class="reps">${isFailed ? `<span class="failed-tag">missed · ${entry.reps}</span>` : (isPassed ? `${entry.reps} reps ✓` : `target ${sideTarget??wk.target}`)}</div>
+            <div class="reps">${isFailed ? `<span class="failed-tag">${t('missed')} · ${entry.reps}</span>` : (isPassed ? `${entry.reps} ${t('reps_word')} ✓` : `${t('target_word')} ${sideTarget??wk.target}`)}</div>
           </div>
           <div class="set-actions">
             <button class="check-btn ${isPassed?'done':''}" data-side="${side}" data-i="${i}" data-weight="${rowWeight}" data-action="pass" ${isFailed?'disabled':''}>✓</button>
@@ -2484,6 +2720,8 @@ let selectedProteinFood = null;   // matched entry from PROTEIN_FOOD_DB, or null
 let proteinEntryMode = 'calc';    // 'calc' (from amount) or 'manual' (direct grams), for type:'grams' foods
 let proteinEggSize = 'medium';
 let proteinViewDate = todayStr();
+let proteinCalViewDate = new Date();
+let selectedMealType = 'breakfast';
 function shiftDateStr(dStr, delta){
   const [y,m,d] = dStr.split('-').map(Number);
   const dt = new Date(y, m-1, d);
@@ -2492,11 +2730,45 @@ function shiftDateStr(dStr, delta){
 }
 function proteinTotalFor(dStr){
   const entries = (data.protein.entries[dStr]||[]);
-  return entries.reduce((sum,e)=> sum+e.grams, 0);
+  return entries.reduce((sum,e)=> sum+(e.grams||0), 0);
 }
+function renderProteinCalendar(){
+  const year = proteinCalViewDate.getFullYear(), month = proteinCalViewDate.getMonth();
+  document.getElementById('protein-cal-month-label').textContent = proteinCalViewDate.toLocaleString(localeCode(), {month:'long', year:'numeric'});
+  const grid = document.getElementById('protein-cal-grid');
+  grid.innerHTML = '';
+  ['S','M','T','W','T','F','S'].forEach(d=>{
+    const el = document.createElement('div'); el.className='cal-dow'; el.textContent=d; grid.appendChild(el);
+  });
+  const startOffset = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayStrVal = todayStr();
+  for(let i=0;i<startOffset;i++){
+    const el = document.createElement('div'); el.className='cal-day cal-empty'; grid.appendChild(el);
+  }
+  for(let d=1; d<=daysInMonth; d++){
+    const dStr = formatDate(new Date(year, month, d));
+    const el = document.createElement('div');
+    el.className = 'cal-day in-month' + (dStr===todayStrVal ? ' today':'') + (dStr===proteinViewDate ? ' selected':'');
+    const hasEntries = (data.protein.entries[dStr]||[]).length>0;
+    el.innerHTML = `${d}${hasEntries ? '<span class="dot"></span>' : ''}`;
+    el.onclick = ()=>{ proteinViewDate = dStr; renderProteinCalendar(); };
+    grid.appendChild(el);
+  }
+  renderProtein();
+}
+document.getElementById('protein-cal-prev').onclick=()=>{ proteinCalViewDate.setMonth(proteinCalViewDate.getMonth()-1); renderProteinCalendar(); };
+document.getElementById('protein-cal-next').onclick=()=>{ proteinCalViewDate.setMonth(proteinCalViewDate.getMonth()+1); renderProteinCalendar(); };
+document.querySelectorAll('.meal-type-btn').forEach(btn=>{
+  btn.onclick = ()=>{
+    selectedMealType = btn.dataset.meal;
+    document.querySelectorAll('.meal-type-btn').forEach(b=>b.classList.toggle('active', b===btn));
+  };
+});
+function mealTypeLabel(meal){ return meal ? t(meal) : ''; }
 function renderProtein(){
   const dStr = proteinViewDate;
-  document.getElementById('protein-date-label').textContent = (dStr===todayStr()) ? 'Today' : formatDateLabel(dStr);
+  document.getElementById('protein-selected-date-label').textContent = (dStr===todayStr()) ? t('today') : formatDateLabel(dStr);
   const total = proteinTotalFor(dStr);
   const goal = data.protein.goal || 120;
   const pct = Math.min(100, Math.round((total/goal)*100));
@@ -2509,24 +2781,22 @@ function renderProtein(){
   const entries = data.protein.entries[dStr]||[];
   const list = document.getElementById('protein-entries-list');
   if(entries.length===0){
-    list.innerHTML = `<div class="empty">${t('nothing_logged_day')}</div>`;
+    list.innerHTML = `<div class="empty">${t('no_food_day')}</div>`;
   } else {
     list.innerHTML = entries.map((e,i)=>`
       <div class="protein-entry">
-        <span class="pname">${e.label}</span>
-        <span class="pgrams">${e.grams}g <button class="pdel" data-protein-del="${i}">✕</button></span>
+        <span class="pname">${e.meal?`<b>${mealTypeLabel(e.meal)}</b> · `:''}${e.label}</span>
+        <span class="pgrams">${e.grams!=null ? e.grams+'g' : ''} <button class="pdel" data-protein-del="${i}">✕</button></span>
       </div>
     `).join('');
     list.querySelectorAll('[data-protein-del]').forEach(btn=>{
       btn.onclick = ()=>{
         entries.splice(parseInt(btn.dataset.proteinDel),1);
-        save(); renderProtein();
+        save(); renderProteinCalendar();
       };
     });
   }
 }
-document.getElementById('protein-prev-day').onclick = ()=>{ proteinViewDate = shiftDateStr(proteinViewDate,-1); renderProtein(); };
-document.getElementById('protein-next-day').onclick = ()=>{ proteinViewDate = shiftDateStr(proteinViewDate,1); renderProtein(); };
 document.getElementById('protein-goal-card').onclick = ()=>{
   const val = prompt('Daily protein goal (grams):', data.protein.goal);
   const num = parseFloat(val);
@@ -2688,16 +2958,21 @@ document.getElementById('protein-add-btn').onclick = ()=>{
   }
   // direct-entry cases: type==='direct', manual mode, or custom freeform food
   const manualEl = document.getElementById('protein-manual-grams');
-  grams = manualEl ? parseFloat(manualEl.value) : NaN;
-  if(isNaN(grams) || grams<0){ showToast('Enter a valid gram amount'); return; }
+  const rawVal = manualEl ? manualEl.value.trim() : '';
+  if(!rawVal){
+    finishProteinAdd(label, null);
+    return;
+  }
+  grams = parseFloat(rawVal);
+  if(isNaN(grams) || grams<0){ showToast('Enter a valid gram amount, or leave it blank'); return; }
   finishProteinAdd(label, grams);
 };
 function finishProteinAdd(label, grams){
   if(!data.protein.entries[proteinViewDate]) data.protein.entries[proteinViewDate] = [];
-  data.protein.entries[proteinViewDate].push({label, grams});
+  data.protein.entries[proteinViewDate].push({label, grams, meal:selectedMealType});
   save();
   resetProteinInputArea();
-  renderProtein();
+  renderProteinCalendar();
 }
 
 document.getElementById('screen-protein').addEventListener('focusin', (e)=>{
