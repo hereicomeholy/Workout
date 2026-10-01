@@ -311,7 +311,7 @@
   .preset-row{display:flex; gap:12px; margin-bottom:22px;}
   .preset-btn{background:var(--surface); border:1px solid var(--line); color:var(--text); font-size:19px; font-weight:700; font-family:'Barlow Condensed',sans-serif; padding:17px 23px; border-radius:14px; box-shadow:var(--shadow-sm);}
   .cancel-btn{background:none; border:none; color:var(--text-dim); font-size:14.5px; margin-top:22px; text-decoration:underline;}
-  .timer-pill{display:none; position:fixed; bottom:26px; left:50%; transform:translateX(-50%); background:var(--red); color:#fff; padding:20px 38px; border-radius:34px; font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:28px; z-index:55; box-shadow:0 8px 24px rgba(224,86,58,0.45);}
+  .timer-pill{display:none; position:fixed; left:0; right:0; bottom:0; width:100%; box-sizing:border-box; background:var(--red); color:#fff; padding:18px 20px calc(18px + env(safe-area-inset-bottom)); text-align:center; font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:26px; letter-spacing:0.5px; z-index:55; box-shadow:0 -6px 20px rgba(0,0,0,0.35); border-radius:0;}
 </style>
 </head>
 <body>
@@ -518,6 +518,53 @@
   </div>
 </div>
 
+<div class="plate-popover-overlay" id="ex-picker-overlay">
+  <div class="plate-popover-card" id="ex-picker-card" style="max-width:420px; max-height:82vh; overflow-y:auto;">
+    <div id="ex-picker-list-view">
+      <div class="plate-pop-header">
+        <span data-i18n="choose_exercise">Choose an exercise</span>
+        <button id="ex-picker-close-btn">✕</button>
+      </div>
+      <div id="ex-picker-categories"></div>
+    </div>
+    <div id="ex-picker-form-view" style="display:none;">
+      <div class="plate-pop-header">
+        <span id="ex-picker-form-title"></span>
+        <button id="ex-picker-close-btn-2">✕</button>
+      </div>
+      <div class="stepper-card">
+        <div class="stepper">
+          <span class="label" id="ex-picker-weight-label">WEIGHT</span>
+          <div class="stepper-row">
+            <button class="step-btn" id="ex-picker-w-minus">−</button>
+            <div class="step-value editable" id="ex-picker-w-value">0</div>
+            <button class="step-btn" id="ex-picker-w-plus">+</button>
+          </div>
+        </div>
+        <div class="stepper">
+          <span class="label" id="ex-picker-reps-label">REPS</span>
+          <div class="stepper-row">
+            <button class="step-btn" id="ex-picker-r-minus">−</button>
+            <div class="step-value editable" id="ex-picker-r-value">0</div>
+            <button class="step-btn" id="ex-picker-r-plus">+</button>
+          </div>
+        </div>
+        <div id="ex-picker-side-row" style="display:none; margin-top:6px;">
+          <span class="label" id="ex-picker-side-label">SIDE</span>
+          <div class="unit-toggle" style="width:fit-content;">
+            <button type="button" id="ex-picker-side-lh">LH</button>
+            <button type="button" id="ex-picker-side-rh">RH</button>
+          </div>
+        </div>
+        <div class="action-row" style="margin-top:14px;">
+          <button class="save-btn" id="ex-picker-save-btn">Save</button>
+          <button class="clear-btn" id="ex-picker-back-btn">Back</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="reorder-overlay" id="reorder-overlay">
   <div class="reorder-header">
     <h2 id="reorder-title" data-i18n="reorder">Reorder</h2>
@@ -622,7 +669,7 @@ const I18N = {
     theme_dark:'🌙 Dark', theme_light:'☀️ Light',
     me_done_banner:"Next session's top set will be whatever you went heaviest on today — add extra sets any time you've got more in the tank.",
     clean_bump_banner:'Complete every set clean next time and that side goes up another 5 lb.',
-    reps_word:'reps', combined:'combined', missed:'missed', kg_unit:'kg',
+    reps_word:'reps', combined:'combined', missed:'missed', kg_unit:'kg', lb_unit:'lb',
     no_sets_today:'No sets logged today yet.', no_history_yet:'No history yet for this exercise.',
     no_records_yet:'No completed sets yet. Log a few workouts and your personal bests will show up here.',
     no_bw_day:'No weight logged this day.', bw_comment_ph:'Comment (optional)',
@@ -634,6 +681,7 @@ const I18N = {
     exercise_name_prompt:'Exercise name (must match exactly):', weight_prompt:'Weight',
     side_prompt:'Which side? Type LH or RH:', food_name_ph:'What did you eat (e.g. Chicken)',
     meal_type_prompt:'Meal (breakfast/lunch/dinner):', protein_header:'Protein', calendar_header:'Calendar',
+    choose_exercise:'Choose an exercise', back:'Back', exercise_added:'Exercise added', no_exercises_yet:'Add some exercises first',
   },
   zh: {
     edit:'編輯', add:'新增', export:'⬇ 匯出', import:'⬆ 匯入',
@@ -665,7 +713,7 @@ const I18N = {
     theme_dark:'🌙 深色', theme_light:'☀️ 淺色',
     me_done_banner:'下次的最高組重量將以你今天做到的最重一組為準——只要還有餘力，隨時可以多加一組。',
     clean_bump_banner:'下次乾淨完成所有組數，這一側就會增加5磅。',
-    reps_word:'下', combined:'合計', missed:'失敗', kg_unit:'公斤',
+    reps_word:'下', combined:'合計', missed:'失敗', kg_unit:'公斤', lb_unit:'磅',
     no_sets_today:'今天還沒有記錄任何組數。', no_history_yet:'這個動作還沒有歷史紀錄。',
     no_records_yet:'還沒有完成的組數。記錄幾次訓練後，你的最佳紀錄就會顯示在這裡。',
     no_bw_day:'這一天沒有體重紀錄。', bw_comment_ph:'備註（選填）',
@@ -677,6 +725,7 @@ const I18N = {
     exercise_name_prompt:'動作名稱（需完全符合）：', weight_prompt:'重量',
     side_prompt:'哪一邊？請輸入 LH 或 RH：', food_name_ph:'吃了什麼（例如：雞肉）',
     meal_type_prompt:'餐別（早餐/午餐/晚餐）：', protein_header:'蛋白質', calendar_header:'行事曆',
+    choose_exercise:'選擇一個動作', back:'返回', exercise_added:'已新增動作', no_exercises_yet:'請先新增一些動作',
   }
 };
 function t(key, vars){
@@ -697,6 +746,7 @@ function applyStaticI18n(){
 function setLang(lang){
   data.lang = lang; save();
   applyStaticI18n();
+  if(typeof syncUnitUI==='function') syncUnitUI(data.unit);
   if(typeof applyTheme==='function') applyTheme();
   if(currentExercise && typeof renderTrack==='function') renderTrack();
   if(typeof renderCalendar==='function') renderCalendar();
@@ -824,6 +874,8 @@ function convertAllWeightsForUnitChange(fromUnit, toUnit){
 function syncUnitUI(u){
   document.getElementById('unit-lb').classList.toggle('active',u==='lb');
   document.getElementById('unit-kg').classList.toggle('active',u==='kg');
+  document.getElementById('unit-lb').textContent = t('lb_unit').toUpperCase();
+  document.getElementById('unit-kg').textContent = t('kg_unit').toUpperCase();
 }
 function setUnit(u){
   if(u===data.unit){ syncUnitUI(u); return; }
@@ -1533,7 +1585,7 @@ function renderTrackRegular(ex){
     ${planHtml}
     <div class="stepper-card">
       <div class="stepper">
-        <span class="label" id="weight-unit-label">${t('weight_label')} (${data.unit.toUpperCase()})</span>
+        <span class="label" id="weight-unit-label">${t('weight_label')} (${unitLabel(data.unit).toUpperCase()})</span>
         <button class="plate-trigger-btn" data-live-source="w-value" data-plate-unit="${data.unit}" title="Plate calculator">🏋️</button>
         <div class="stepper-row">
           <button class="step-btn" id="w-minus">−</button>
@@ -2085,32 +2137,121 @@ function renderDayDetail(){
 }
 function addExerciseForSelectedDate(){
   const names = allExerciseNames();
-  if(names.length===0){ showToast('Add some exercises first'); return; }
-  const name = prompt(t('exercise_name_prompt')+'\n'+names.slice(0,12).join(', ')+(names.length>12?'...':''));
-  if(!name) return;
-  if(!names.includes(name)){ showToast('No exercise found with that exact name'); return; }
+  if(names.length===0){ showToast(t('no_exercises_yet')); return; }
+  openExPickerModal();
+}
+
+/* ---------- Exercise picker modal (backfill a set onto any calendar day) ---------- */
+let exPickerWeight = 0, exPickerReps = 0, exPickerSide = null, exPickerSelectedName = null;
+function openExPickerModal(){
+  renderExPickerCategories();
+  document.getElementById('ex-picker-list-view').style.display='block';
+  document.getElementById('ex-picker-form-view').style.display='none';
+  const overlay = document.getElementById('ex-picker-overlay');
+  overlay.style.display='flex';
+  requestAnimationFrame(()=> overlay.classList.add('active'));
+}
+function closeExPickerModal(){
+  const overlay = document.getElementById('ex-picker-overlay');
+  overlay.classList.remove('active');
+  setTimeout(()=>{ overlay.style.display='none'; }, 180);
+}
+function renderExPickerCategories(){
+  const wrap = document.getElementById('ex-picker-categories');
+  wrap.innerHTML = Object.entries(data.categories).map(([cat, exercises])=>`
+    <div class="category" data-cat="${cat}">
+      <div class="category-head" data-ex-picker-toggle-cat>
+        <span class="left"><span class="chevron">›</span><span>${typeof categoryDisplayName==='function' ? categoryDisplayName(cat) : cat}</span></span>
+      </div>
+      <div class="category-body">
+        ${exercises.map(e=>`<div class="exercise-item" data-ex-picker-name="${e.name}"><span>${e.name}${e.mode==='531' ? '<span class="tag">5/3/1</span>' : ''}</span></div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+document.getElementById('ex-picker-categories').addEventListener('click', ev=>{
+  const item = ev.target.closest('[data-ex-picker-name]');
+  if(item){ openExPickerForm(item.dataset.exPickerName); return; }
+  const head = ev.target.closest('[data-ex-picker-toggle-cat]');
+  if(head){ head.closest('.category').classList.toggle('open'); }
+});
+function updateExPickerSteppers(){
+  document.getElementById('ex-picker-w-value').textContent = exPickerWeight;
+  document.getElementById('ex-picker-r-value').textContent = exPickerReps;
+}
+function syncExPickerSideButtons(){
+  document.getElementById('ex-picker-side-lh').classList.toggle('active', exPickerSide==='LH');
+  document.getElementById('ex-picker-side-rh').classList.toggle('active', exPickerSide==='RH');
+}
+function attachExPickerTapEdit(elId, getValue, setValue, isInt){
+  const el = document.getElementById(elId);
+  el.onclick = ()=>{
+    const current = getValue();
+    el.innerHTML = `<input type="number" ${isInt?'':'step="any"'} style="width:100%; background:transparent; border:none; color:var(--text); font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:32px; text-align:center; outline:none;">`;
+    const inp = el.querySelector('input');
+    inp.value = current;
+    inp.focus(); inp.select();
+    let committed = false;
+    const commit = ()=>{
+      if(committed) return; committed = true;
+      const val = isInt ? parseInt(inp.value) : parseFloat(inp.value);
+      setValue(isNaN(val) ? current : Math.max(0, val));
+    };
+    inp.addEventListener('blur', commit);
+    inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); });
+  };
+}
+attachExPickerTapEdit('ex-picker-w-value', ()=>exPickerWeight, v=>{ exPickerWeight=v; updateExPickerSteppers(); });
+attachExPickerTapEdit('ex-picker-r-value', ()=>exPickerReps, v=>{ exPickerReps=v; updateExPickerSteppers(); }, true);
+function openExPickerForm(name){
+  exPickerSelectedName = name;
   const isArm = isArmwrestlingExercise(name);
   const u = isArm ? 'lb' : data.unit;
-  const weightVal = prompt(t('weight_prompt')+' ('+unitLabel(u)+'):');
-  if(weightVal===null) return;
-  const weight = parseFloat(weightVal);
-  if(isNaN(weight) || weight<0){ showToast('Enter a valid weight'); return; }
-  const repsVal = prompt(t('reps_word')+':');
-  if(repsVal===null) return;
-  const reps = parseInt(repsVal);
-  if(isNaN(reps) || reps<0){ showToast('Enter a valid rep count'); return; }
-  const entry = {date:selectedDate, weight, reps};
-  if(isArm){
-    const sideVal = (prompt(t('side_prompt'), 'LH')||'').trim().toUpperCase();
-    if(sideVal==='LH' || sideVal==='RH') entry.side = sideVal;
-  }
-  if(!data.logs[name]) data.logs[name]=[];
-  data.logs[name].push(entry);
-  save();
-  expandedDayExercises.add(name);
-  renderCalendar();
-  showToast('Exercise added');
+  document.getElementById('ex-picker-form-title').textContent = name;
+  document.getElementById('ex-picker-weight-label').textContent = t('weight_label')+' ('+unitLabel(u).toUpperCase()+')';
+  document.getElementById('ex-picker-reps-label').textContent = t('reps_label');
+  document.getElementById('ex-picker-side-label').textContent = t('side_prompt');
+  document.getElementById('ex-picker-save-btn').textContent = t('save');
+  document.getElementById('ex-picker-back-btn').textContent = t('back');
+  const lastSet = (data.logs[name]||[]).slice(-1)[0];
+  exPickerWeight = lastSet ? lastSet.weight : 0;
+  exPickerReps = lastSet ? lastSet.reps : 0;
+  exPickerSide = isArm ? (lastSet && lastSet.side ? lastSet.side : 'LH') : null;
+  updateExPickerSteppers();
+  document.getElementById('ex-picker-side-row').style.display = isArm ? 'block' : 'none';
+  if(isArm) syncExPickerSideButtons();
+  document.getElementById('ex-picker-list-view').style.display='none';
+  document.getElementById('ex-picker-form-view').style.display='block';
 }
+const exPickerInc = 2.5;
+document.getElementById('ex-picker-w-minus').onclick=()=>{ const inc = exPickerSide!==null ? 5 : exPickerInc; exPickerWeight=Math.max(0, exPickerWeight-inc); updateExPickerSteppers(); };
+document.getElementById('ex-picker-w-plus').onclick=()=>{ const inc = exPickerSide!==null ? 5 : exPickerInc; exPickerWeight+=inc; updateExPickerSteppers(); };
+document.getElementById('ex-picker-r-minus').onclick=()=>{ exPickerReps=Math.max(0, exPickerReps-1); updateExPickerSteppers(); };
+document.getElementById('ex-picker-r-plus').onclick=()=>{ exPickerReps+=1; updateExPickerSteppers(); };
+document.getElementById('ex-picker-side-lh').onclick=()=>{ exPickerSide='LH'; syncExPickerSideButtons(); };
+document.getElementById('ex-picker-side-rh').onclick=()=>{ exPickerSide='RH'; syncExPickerSideButtons(); };
+document.getElementById('ex-picker-back-btn').onclick=()=>{
+  document.getElementById('ex-picker-form-view').style.display='none';
+  document.getElementById('ex-picker-list-view').style.display='block';
+};
+function saveExPickerEntry(){
+  if(!exPickerSelectedName) return;
+  const entry = {date:selectedDate, weight:exPickerWeight, reps:exPickerReps};
+  if(exPickerSide) entry.side = exPickerSide;
+  if(!data.logs[exPickerSelectedName]) data.logs[exPickerSelectedName]=[];
+  data.logs[exPickerSelectedName].push(entry);
+  save();
+  expandedDayExercises.add(exPickerSelectedName);
+  closeExPickerModal();
+  renderCalendar();
+  showToast(t('exercise_added'));
+}
+document.getElementById('ex-picker-save-btn').onclick = saveExPickerEntry;
+document.getElementById('ex-picker-close-btn').onclick = closeExPickerModal;
+document.getElementById('ex-picker-close-btn-2').onclick = closeExPickerModal;
+document.getElementById('ex-picker-overlay').addEventListener('click', e=>{
+  if(e.target.id==='ex-picker-overlay') closeExPickerModal();
+});
 function renderVolumeChart(){
   const svg = document.getElementById('volume-chart');
   const allEntries = [];
